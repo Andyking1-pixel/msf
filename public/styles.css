@@ -1,3 +1,7 @@
+/* ========================= */
+/* RESET GENERAL */
+/* ========================= */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,9 +10,10 @@
 }
 
 body {
-  background: #0f172a;
-  color: #e5e7eb;
   min-height: 100vh;
+  color: #e5e7eb;
+  background:
+    radial-gradient(circle at top, #1e293b 0, #020617 45%, #020617 100%);
 }
 
 /* ========================= */
@@ -17,9 +22,14 @@ body {
 
 .header {
   text-align: center;
-  padding: 1.5rem;
-  background: #020617;
+  padding: 1.8rem 1rem 1.5rem;
+  background: rgba(2, 6, 23, 0.98);
   border-bottom: 1px solid #1f2937;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(16px);
   animation: headerIn 0.6s ease-out;
 }
 
@@ -35,12 +45,62 @@ body {
 }
 
 .header h1 {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
+  font-size: 2.1rem;
+  margin-bottom: 0.4rem;
 }
 
 .header p {
   color: #9ca3af;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+/* LOGO MSF */
+.logo-text {
+  background: linear-gradient(120deg, #22c55e, #a855f7, #38bdf8);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(34, 197, 94, 0.28);
+  animation: logoGradient 5s ease-in-out infinite;
+}
+
+.logo-globe {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 2.1rem;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6));
+  animation: globeFloat 3s ease-in-out infinite;
+}
+
+/* Animación del degradado del texto */
+@keyframes logoGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animación del mundo flotando */
+@keyframes globeFloat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(6deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
 }
 
 /* ========================= */
@@ -58,6 +118,10 @@ body {
 
 h2 {
   margin-bottom: 0.75rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e5e7eb;
 }
 
 /* ========================= */
@@ -122,7 +186,11 @@ h2 {
 }
 
 .product-name {
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  text-shadow: 0 0 10px rgba(15, 23, 42, 0.9);
 }
 
 .product-desc {
@@ -138,6 +206,7 @@ h2 {
 .product-price {
   font-weight: 700;
   margin-top: 0.25rem;
+  font-size: 1rem;
 }
 
 /* ========================= */
@@ -206,17 +275,16 @@ h2 {
 }
 
 /* ========================= */
-/* PANEL DE PEDIDOS DERECHA */
+/* PANEL DE INFO DERECHA */
 /* ========================= */
 
 .orders-section {
-  background: #020617;
+  background: rgba(2, 6, 23, 0.95);
   border-radius: 0.75rem;
   border: 1px solid #1f2937;
-  padding: 0.75rem;
-  max-height: 70vh;
-  overflow-y: auto;
+  padding: 1rem;
   animation: fadeIn 0.4s ease;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
 }
 
 @keyframes fadeIn {
@@ -332,6 +400,36 @@ textarea {
 }
 
 /* ========================= */
+/* MÉTODOS DE PAGO EN MODAL */
+/* ========================= */
+
+.payment-info h3 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.payment-warning {
+  font-size: 0.85rem;
+  color: #f9c74f;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.payment-box {
+  background: #0f1b33;
+  border: 1px solid #1f2937;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.payment-box p {
+  margin: 3px 0;
+  text-align: center;
+}
+
+/* ========================= */
 /* PANEL ADMIN */
 /* ========================= */
 
@@ -431,30 +529,4 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
-.payment-info h3 {
-  font-size: 1rem;
-  margin-bottom: 0.25rem;
-  text-align: center;
-}
-
-.payment-warning {
-  font-size: 0.85rem;
-  color: #f9c74f;
-  margin-bottom: 0.5rem;
-  text-align: center;
-}
-
-.payment-box {
-  background: #0f1b33;
-  border: 1px solid #1f2937;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.payment-box p {
-  margin: 3px 0;
-  text-align: center;
-}
-
 
