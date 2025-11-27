@@ -4,12 +4,6 @@
   <meta charset="UTF-8">
   <title>MSF</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<head>
-  <meta charset="UTF-8">
-  <title>MSF</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Colores del navegador / app -->
   <meta name="theme-color" content="#020617">
@@ -17,12 +11,13 @@
   <!-- PWA manifest -->
   <link rel="manifest" href="/manifest.webmanifest">
 
-  <!-- Icono para móviles / escritorio -->
+  <!-- Iconos PWA -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <header class="header">
     <h1>MSF 🌍</h1>
@@ -34,80 +29,82 @@
     <section>
       <h2>Productos disponibles</h2>
       <div id="products-list" class="products-grid">
-        <!-- Aquí JS va a insertar las tarjetas de productos -->
+        <!-- Aquí JS va a insertar las tarjetas -->
       </div>
     </section>
 
-    <!-- PANEL SECRETO DE ADMINISTRACIÓN (solo se muestra con ?admin=1 en la URL) -->
-<section id="admin-panel" class="admin-panel hidden">
-  <h2>Panel MSF (Admin)</h2>
-  <p class="admin-hint">
-    Este panel solo aparece si entras con <code>?admin=1</code> en la URL.<br>
-    Ejemplo: <code>file:///.../index.html?admin=1</code> o <code>http://localhost:5500/index.html?admin=1</code>
-  </p>
+    <!-- PANEL SECRETO DE ADMINISTRACIÓN -->
+    <section id="admin-panel" class="admin-panel hidden">
+      <h2>Panel MSF (Admin)</h2>
 
-  <form id="product-form" class="admin-form">
-    <input type="hidden" id="admin-product-id">
+      <p class="admin-hint">
+        Este panel solo aparece si entras con <code>?admin=1</code> en la URL.<br>
+        Ejemplo: <code>https://msf-5jnx.onrender.com/?admin=1</code>
+      </p>
 
-    <label>
-      Nombre del producto
-      <input type="text" id="admin-name" required>
-    </label>
+      <form id="product-form" class="admin-form">
+        <input type="hidden" id="admin-product-id">
 
-    <label>
-      Descripción
-      <textarea id="admin-description" required></textarea>
-    </label>
+        <label>
+          Nombre del producto
+          <input type="text" id="admin-name" required>
+        </label>
 
-    <label>
-      Precio (MXN)
-      <input type="number" id="admin-price" step="0.01" min="0" required>
-    </label>
+        <label>
+          Descripción
+          <textarea id="admin-description" required></textarea>
+        </label>
 
-    <label>
-      País de origen
-      <input type="text" id="admin-origin" required>
-    </label>
+        <label>
+          Precio (MXN)
+          <input type="number" id="admin-price" step="0.01" min="0" required>
+        </label>
 
-    <label>
-      Días de entrega estimados
-      <input type="number" id="admin-days" min="1" required>
-    </label>
+        <label>
+          País de origen
+          <input type="text" id="admin-origin" required>
+        </label>
 
-    <label>
-      URL de la imagen
-      <input type="text" id="admin-image" required>
-    </label>
+        <label>
+          Días de entrega estimados
+          <input type="number" id="admin-days" min="1" required>
+        </label>
 
-    <div class="admin-buttons">
-      <button type="submit" class="btn-primary">Guardar producto</button>
-      <button type="button" id="new-product-btn" class="btn-secondary">Nuevo producto</button>
-    </div>
-  </form>
+        <label>
+          URL de la imagen
+          <input type="text" id="admin-image" required>
+        </label>
 
-  <h3>Productos actuales</h3>
-  <table class="admin-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Precio (MXN)</th>
-        <th>Origen</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="admin-products-tbody">
-      <!-- Aquí se llena con JS -->
-    </tbody>
-  </table>
-</section>
+        <div class="admin-buttons">
+          <button type="submit" class="btn-primary">Guardar producto</button>
+          <button type="button" id="new-product-btn" class="btn-secondary">Nuevo producto</button>
+        </div>
+      </form>
 
-    <!-- LISTA SIMPLE DE PEDIDOS (LOCALES) -->
+      <h3>Productos actuales</h3>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio (MXN)</th>
+            <th>Origen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="admin-products-tbody">
+          <!-- JS llena esta tabla -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- INFORMACIÓN EXTRA -->
     <section class="orders-section">
       <h2>¿Cómo se gestionan los pedidos?</h2>
-      <h3>Todos los pedidos se envían directamente a tu WhatsApp para que tú los gestiones con el proveedor.</h3>
+      <h3>Todos los pedidos se envían directamente a tu WhatsApp.</h3>
       <p>Todas las cuentas son legales y 100% seguras.</p>
-      <p>Cualquier duda no dudes en contactarme +523328312781.</p>
+      <p>Cualquier duda contáctame: <b>+52 332 831 2781</b></p>
     </section>
   </main>
 
@@ -118,7 +115,32 @@
       <h2>Hacer pedido</h2>
       <p id="modal-product-name"></p>
 
-      <form id="order-form">
+      <!-- MÉTODOS DE PAGO -->
+      <div class="payment-info">
+        <h3>𝐌𝐄𝐓𝐎𝐃𝐎𝐒 𝐃𝐄 𝐏𝐀𝐆𝐎</h3>
+
+        <p class="payment-warning">
+          ᴇɴ ᴄᴏɴᴄᴇᴘᴛᴏ ɴᴏ ᴘᴏɴɢᴀꜱ ɴᴀᴅᴀ ʀᴇʟᴀᴄɪᴏɴᴀᴅᴏ ᴀʟ ꜱᴛʀᴇᴀᴍɪɴɢ / ᴘʟᴀᴛᴀꜰᴏʀᴍᴀꜱ.<br>
+          ᴘᴜᴇᴅᴇꜱ ᴘᴏɴᴇʀ <b>“ᴄᴏᴍɪᴅᴀ”</b>, <b>“ᴅᴏɴᴀᴄɪᴏɴ”</b> ᴏ ꜱᴏʟᴏ ᴛᴜ ɴᴏᴍʙʀ𝐞.
+        </p>
+
+        <div class="payment-box">
+          <p><b>𝑇𝑅𝐴𝑁𝑆𝐹𝐸𝑅𝐸𝑁𝐶𝐼𝐴𝑆</b></p>
+          <p>💳 <b id="account-number">638180000124753295</b></p>
+          <p>🏦 NU</p>
+          <p>👤 Jordan Alvarez</p>
+          <p>📌 Mandar comprobante</p>
+
+          <button id="copy-account-btn" class="btn-secondary" style="margin-top:0.5rem;">
+            Copiar número de cuenta
+          </button>
+
+          <p id="copy-status" style="color:#22c55e; font-size:0.8rem; margin-top:0.3rem;"></p>
+        </div>
+      </div>
+
+      <!-- FORMULARIO DEL PEDIDO -->
+      <form id="order-form" style="margin-top:1rem;">
         <input type="hidden" id="product-id">
 
         <label>

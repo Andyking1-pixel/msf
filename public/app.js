@@ -470,5 +470,23 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
+// ========================
+// COPIAR NÚMERO DE CUENTA
+// ========================
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "copy-account-btn") {
+    const number = document.getElementById("account-number").textContent;
+    navigator.clipboard.writeText(number)
+      .then(() => {
+        document.getElementById("copy-status").textContent = "Número copiado ✔";
+        setTimeout(() => {
+          document.getElementById("copy-status").textContent = "";
+        }, 2000);
+      })
+      .catch(() => {
+        document.getElementById("copy-status").textContent = "Error al copiar";
+      });
+  }
+});
 
 
