@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>MSF</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <h1>MSF 🌍</h1>
+    <p>Compra productos sin complicarte la vida.</p>
+  </header>
+
+  <main class="container">
+    <!-- LISTA DE PRODUCTOS -->
+    <section>
+      <h2>Productos disponibles</h2>
+      <div id="products-list" class="products-grid">
+        <!-- Aquí JS va a insertar las tarjetas de productos -->
+      </div>
+    </section>
+
+    <!-- PANEL SECRETO DE ADMINISTRACIÓN (solo se muestra con ?admin=1 en la URL) -->
+<section id="admin-panel" class="admin-panel hidden">
+  <h2>Panel MSF (Admin)</h2>
+  <p class="admin-hint">
+    Este panel solo aparece si entras con <code>?admin=1</code> en la URL.<br>
+    Ejemplo: <code>file:///.../index.html?admin=1</code> o <code>http://localhost:5500/index.html?admin=1</code>
+  </p>
+
+  <form id="product-form" class="admin-form">
+    <input type="hidden" id="admin-product-id">
+
+    <label>
+      Nombre del producto
+      <input type="text" id="admin-name" required>
+    </label>
+
+    <label>
+      Descripción
+      <textarea id="admin-description" required></textarea>
+    </label>
+
+    <label>
+      Precio (MXN)
+      <input type="number" id="admin-price" step="0.01" min="0" required>
+    </label>
+
+    <label>
+      País de origen
+      <input type="text" id="admin-origin" required>
+    </label>
+
+    <label>
+      Días de entrega estimados
+      <input type="number" id="admin-days" min="1" required>
+    </label>
+
+    <label>
+      URL de la imagen
+      <input type="text" id="admin-image" required>
+    </label>
+
+    <div class="admin-buttons">
+      <button type="submit" class="btn-primary">Guardar producto</button>
+      <button type="button" id="new-product-btn" class="btn-secondary">Nuevo producto</button>
+    </div>
+  </form>
+
+  <h3>Productos actuales</h3>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Precio (MXN)</th>
+        <th>Origen</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="admin-products-tbody">
+      <!-- Aquí se llena con JS -->
+    </tbody>
+  </table>
+</section>
+
+    <!-- LISTA SIMPLE DE PEDIDOS (LOCALES) -->
+    <section class="orders-section">
+      <h2>¿Cómo se gestionan los pedidos?</h2>
+      <h3>Todos los pedidos se envían directamente a tu WhatsApp para que tú los gestiones con el proveedor.</h3>
+      <p>Todas las cuentas son legales y 100% seguras.</p>
+      <p>Cualquier duda no dudes en contactarme +523328312781.</p>
+    </section>
+  </main>
+
+  <!-- MODAL PARA HACER PEDIDO -->
+  <div id="order-modal" class="modal hidden">
+    <div class="modal-content">
+      <button id="close-modal" class="close-btn">✖</button>
+      <h2>Hacer pedido</h2>
+      <p id="modal-product-name"></p>
+
+      <form id="order-form">
+        <input type="hidden" id="product-id">
+
+        <label>
+          Tu nombre:
+          <input type="text" id="buyer-name" required>
+        </label>
+
+        <label>
+          Cantidad:
+          <input type="number" id="quantity" min="1" value="1" required>
+        </label>
+
+        <button type="submit" class="btn-primary">Confirmar pedido</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
