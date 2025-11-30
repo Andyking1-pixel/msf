@@ -27,6 +27,14 @@
     <p>Compra productos sin complicarte la vida.</p>
   </header>
 
+  <!-- OFERTAS VISIBLES PARA EL CLIENTE -->
+  <section class="offers-section">
+    <h2>🔥 Ofertas del día</h2>
+    <ul id="offers-list" class="offers-list">
+      <!-- Ofertas cargadas desde JS -->
+    </ul>
+  </section>
+
   <main class="container">
     <!-- LISTA DE PRODUCTOS -->
     <section>
@@ -45,6 +53,7 @@
         Ejemplo: <code>https://msf-5jnx.onrender.com/?admin=1</code>
       </p>
 
+      <!-- FORM DE PRODUCTOS -->
       <form id="product-form" class="admin-form">
         <input type="hidden" id="admin-product-id">
 
@@ -100,9 +109,26 @@
           <!-- JS llena esta tabla -->
         </tbody>
       </table>
+
+      <!-- ADMINISTRAR OFERTAS -->
+      <h3 style="margin-top:2rem;">🔥 Ofertas</h3>
+
+      <form id="offer-form" class="admin-form">
+        <label style="grid-column: 1 / -1;">
+          Texto de la oferta
+          <input type="text" id="offer-text" required>
+        </label>
+        <div class="admin-buttons">
+          <button type="submit" class="btn-primary">Agregar oferta</button>
+        </div>
+      </form>
+
+      <ul id="admin-offers-list" class="offers-list" style="margin-top:1rem;">
+        <!-- Ofertas para admin -->
+      </ul>
     </section>
 
-    <!-- INFORMACIÓN EXTRA -->
+    <!-- INFORMACIÓN EXTRA / FAQ -->
     <section class="orders-section">
       <h2>¿Cómo se gestionan los pedidos?</h2>
       <h3>Todos los pedidos se envían directamente a tu WhatsApp.</h3>

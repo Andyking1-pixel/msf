@@ -1,6 +1,8 @@
-const ADMIN_PASSWORD = "753951Andy";
+/* ============================================================
+   CONFIGURACIÓN ADMIN
+   ============================================================ */
 
-// Clave para recordar si ya inició sesión como admin
+const ADMIN_PASSWORD = "753951Andy";
 const ADMIN_LOGGED_KEY = "msf_admin_logged_in";
 
 /* ============================================================
@@ -119,7 +121,7 @@ const DEFAULT_PRODUCTS = [
 ];
 
 /* ============================================================
-   LOCAL STORAGE
+   LOCAL STORAGE PRODUCTOS
    ============================================================ */
 
 const PRODUCTS_KEY = "msf_products";
@@ -141,8 +143,29 @@ function saveProductsToStorage(products) {
   localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
 }
 
-// Productos en memoria
 let products = loadProductsFromStorage();
+
+/* ============================
+   OFERTAS
+   ============================ */
+
+const OFFERS_KEY = "msf_offers";
+
+function loadOffers() {
+  const raw = localStorage.getItem(OFFERS_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function saveOffers(offers) {
+  localStorage.setItem(OFFERS_KEY, JSON.stringify(offers));
+}
+
+let offers = loadOffers();
 
 /* ============================================================
    ELEMENTOS DEL DOM
@@ -171,11 +194,18 @@ const adminImageInput = document.getElementById("admin-image");
 const newProductBtn = document.getElementById("new-product-btn");
 const adminProductsTbody = document.getElementById("admin-products-tbody");
 
+// Admin ofertas
+const offerForm = document.getElementById("offer-form");
+const offerTextInput = document.getElementById("offer-text");
+const adminOffersList = document.getElementById("admin-offers-list");
+
 /* ============================================================
    RENDER PRODUCTOS (CON ANIMACIÓN)
    ============================================================ */
 
 function renderProducts() {
+  if (!productsListEl) return;
+
   productsListEl.innerHTML = "";
 
   if (!products || products.length === 0) {
@@ -212,6 +242,29 @@ function renderProducts() {
 }
 
 /* ============================================================
+   RENDER OFERTAS (CLIENTE)
+   ============================================================ */
+
+function renderOffers() {
+  const offersList = document.getElementById("offers-list");
+  if (!offersList) return;
+
+  offersList.innerHTML = "";
+
+  if (!offers || offers.length === 0) {
+    offersList.innerHTML = "<li>No hay ofertas por ahora.</li>";
+    return;
+  }
+
+  offers.forEach((offer) => {
+    const li = document.createElement("li");
+    li.className = "offer-item";
+    li.textContent = offer.text;
+    offersList.appendChild(li);
+  });
+}
+
+/* ============================================================
    MODAL DE PEDIDO
    ============================================================ */
 
@@ -227,7 +280,7 @@ function openOrderModal(productId) {
 
 function closeOrderModal() {
   modalEl.classList.add("hidden");
-  orderForm.reset();
+  if (orderForm) orderForm.reset();
   modalProductNameEl.textContent = "";
 }
 
@@ -279,13 +332,14 @@ if (orderForm) {
       `Total: $${totalAmount.toFixed(2)} MXN\n\n` +
       `Cliente: ${buyerName}\n\n` +
       `Fecha: ${new Date().toLocaleString()}`;
-    
+
+    // Enviar pedido al backend (log / futuro historial)
     fetch("/api/orders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
-     },
-     body: JSON.stringify({
+      },
+      body: JSON.stringify({
         productId: product.id,
         productName: product.name,
         buyerName,
@@ -297,16 +351,17 @@ if (orderForm) {
       console.error("Error enviando pedido al backend:", err);
     });
 
+    // Enviar a WhatsApp
     sendOrderToWhatsApp(orderMessage);
 
     alert("Se abrió WhatsApp con el pedido listo para enviar. Revísalo y mándalo desde ahí ✅ gracias por la confianza");
 
     closeOrderModal();
-    });
-    }
+  });
+}
 
 /* ============================================================
-   PANEL ADMIN
+   PANEL ADMIN – PRODUCTOS
    ============================================================ */
 
 function clearAdminForm() {
@@ -414,6 +469,63 @@ if (newProductBtn) {
 }
 
 /* ============================================================
+   PANEL ADMIN – OFERTAS
+   ============================================================ */
+
+function renderAdminOffers() {
+  if (!adminOffersList) return;
+
+  adminOffersList.innerHTML = "";
+
+  if (!offers || offers.length === 0) {
+    adminOffersList.innerHTML = "<li>No hay ofertas.</li>";
+    return;
+  }
+
+  offers.forEach((offer, index) => {
+    const li = document.createElement("li");
+    li.className = "offer-item";
+    li.innerHTML = `
+      ${offer.text}
+      <button data-offer-index="${index}" class="btn-secondary" style="margin-left:10px;font-size:0.8rem;">
+        Eliminar
+      </button>
+    `;
+    adminOffersList.appendChild(li);
+  });
+}
+
+if (offerForm && offerTextInput) {
+  offerForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const text = offerTextInput.value.trim();
+    if (!text) return;
+
+    offers.push({ text });
+    saveOffers(offers);
+    offerTextInput.value = "";
+
+    renderOffers();
+    renderAdminOffers();
+  });
+}
+
+// Eliminar ofertas (delegación)
+document.addEventListener("click", (e) => {
+  const btn = e.target;
+  if (btn && btn.matches("[data-offer-index]")) {
+    const index = parseInt(btn.getAttribute("data-offer-index"));
+    if (!isNaN(index)) {
+      offers.splice(index, 1);
+      saveOffers(offers);
+      renderOffers();
+      renderAdminOffers();
+    }
+  }
+});
+
+/* ============================================================
    LOGIN ADMIN (CONTRASEÑA)
    ============================================================ */
 
@@ -428,24 +540,23 @@ function initAdminPanelVisibility() {
     return;
   }
 
-  // Si ya había iniciado sesión antes en este navegador
   const alreadyLogged = localStorage.getItem(ADMIN_LOGGED_KEY) === "true";
   if (alreadyLogged) {
     adminPanelEl.classList.remove("hidden");
     renderAdminProductList();
+    renderAdminOffers();
     return;
   }
 
-  // Pedir contraseña
   const pwd = prompt("Ingresa la contraseña de administrador:");
 
   if (pwd === ADMIN_PASSWORD) {
     localStorage.setItem(ADMIN_LOGGED_KEY, "true");
     adminPanelEl.classList.remove("hidden");
     renderAdminProductList();
+    renderAdminOffers();
   } else {
     alert("Contraseña incorrecta. Acceso denegado.");
-    // No mostramos panel
   }
 }
 
@@ -454,10 +565,12 @@ function initAdminPanelVisibility() {
    ============================================================ */
 
 renderProducts();
+renderOffers();
 initAdminPanelVisibility();
-// ============================
-// REGISTRO DEL SERVICE WORKER
-// ============================
+
+/* ============================
+   REGISTRO DEL SERVICE WORKER
+   ============================ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
@@ -470,23 +583,28 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
-// ========================
-// COPIAR NÚMERO DE CUENTA
-// ========================
+
+/* ========================
+   COPIAR NÚMERO DE CUENTA
+   ======================== */
 document.addEventListener("click", (e) => {
   if (e.target && e.target.id === "copy-account-btn") {
-    const number = document.getElementById("account-number").textContent;
-    navigator.clipboard.writeText(number)
+    const numberEl = document.getElementById("account-number");
+    const statusEl = document.getElementById("copy-status");
+    if (!numberEl || !statusEl) return;
+
+    const number = numberEl.textContent;
+    navigator.clipboard
+      .writeText(number)
       .then(() => {
-        document.getElementById("copy-status").textContent = "Número copiado ✔";
+        statusEl.textContent = "Número copiado ✔";
         setTimeout(() => {
-          document.getElementById("copy-status").textContent = "";
+          statusEl.textContent = "";
         }, 2000);
       })
       .catch(() => {
-        document.getElementById("copy-status").textContent = "Error al copiar";
+        statusEl.textContent = "Error al copiar";
       });
   }
 });
-
 
