@@ -17,7 +17,7 @@ const DEFAULT_PRODUCTS = [
     price: 70,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Netflix-new-icon.png"
+    image: "/img/netflix-perfil.png"
   },
   {
     id: 2,
@@ -26,7 +26,7 @@ const DEFAULT_PRODUCTS = [
     price: 200,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Netflix-new-icon.png"
+    image: "/img/netflix-completa.png"
   },
   {
     id: 3,
@@ -35,7 +35,7 @@ const DEFAULT_PRODUCTS = [
     price: 45.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg"
+    image: "/img/max-perfil.png"
   },
   {
     id: 4,
@@ -44,7 +44,7 @@ const DEFAULT_PRODUCTS = [
     price: 145.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg"
+    image: "/img/max-completa.png"
   },
   {
     id: 5,
@@ -53,7 +53,7 @@ const DEFAULT_PRODUCTS = [
     price: 50.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg"
+    image: "/img/disney-perfil.png"
   },
   {
     id: 6,
@@ -62,7 +62,7 @@ const DEFAULT_PRODUCTS = [
     price: 180.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg"
+    image: "/img/disney-completa.png"
   },
   {
     id: 7,
@@ -71,7 +71,7 @@ const DEFAULT_PRODUCTS = [
     price: 40.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/ViX_Logo.svg"
+    image: "/img/vix-perfil.png"
   },
   {
     id: 8,
@@ -80,7 +80,7 @@ const DEFAULT_PRODUCTS = [
     price: 65.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/ViX_Logo.svg"
+    image: "/img/vix-completa.png"
   },
   {
     id: 9,
@@ -89,7 +89,7 @@ const DEFAULT_PRODUCTS = [
     price: 40.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg"
+    image: "/img/prime-perfil.png"
   },
   {
     id: 10,
@@ -98,7 +98,7 @@ const DEFAULT_PRODUCTS = [
     price: 70.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg"
+    image: "/img/prime-completa.png"
   },
   {
     id: 11,
@@ -107,7 +107,7 @@ const DEFAULT_PRODUCTS = [
     price: 35.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Crunchyroll_Logo.svg"
+    image: "/img/crunchy-perfil.png"
   },
   {
     id: 12,
@@ -116,7 +116,7 @@ const DEFAULT_PRODUCTS = [
     price: 65.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Crunchyroll_Logo.svg"
+    image: "/img/crunchy-completa.png"
   }
 ];
 
@@ -165,6 +165,7 @@ function saveOffers(offers) {
   localStorage.setItem(OFFERS_KEY, JSON.stringify(offers));
 }
 
+// Estructura: { text, image }
 let offers = loadOffers();
 
 /* ============================================================
@@ -197,6 +198,7 @@ const adminProductsTbody = document.getElementById("admin-products-tbody");
 // Admin ofertas
 const offerForm = document.getElementById("offer-form");
 const offerTextInput = document.getElementById("offer-text");
+const offerImageInput = document.getElementById("offer-image");
 const adminOffersList = document.getElementById("admin-offers-list");
 
 /* ============================================================
@@ -258,8 +260,18 @@ function renderOffers() {
 
   offers.forEach((offer) => {
     const li = document.createElement("li");
-    li.className = "offer-item";
-    li.textContent = offer.text;
+    li.className = "offer-card";
+
+    const hasImage = offer.image && offer.image.trim() !== "";
+
+    li.innerHTML = `
+      ${hasImage ? `<img src="${offer.image}" alt="Oferta" class="offer-image">` : ""}
+      <div class="offer-content">
+        <div class="offer-text">${offer.text}</div>
+        <span class="offer-badge">Oferta limitada</span>
+      </div>
+    `;
+
     offersList.appendChild(li);
   });
 }
@@ -484,10 +496,14 @@ function renderAdminOffers() {
 
   offers.forEach((offer, index) => {
     const li = document.createElement("li");
-    li.className = "offer-item";
+    li.className = "offer-item-admin";
+
+    const hasImage = offer.image && offer.image.trim() !== "";
+
     li.innerHTML = `
-      ${offer.text}
-      <button data-offer-index="${index}" class="btn-secondary" style="margin-left:10px;font-size:0.8rem;">
+      ${hasImage ? `<img src="${offer.image}" alt="Oferta">` : ""}
+      <span>${offer.text}</span>
+      <button data-offer-index="${index}" class="btn-secondary" style="margin-left:auto;font-size:0.8rem;">
         Eliminar
       </button>
     `;
@@ -495,23 +511,29 @@ function renderAdminOffers() {
   });
 }
 
-if (offerForm && offerTextInput) {
+if (offerForm && offerTextInput && offerImageInput) {
   offerForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const text = offerTextInput.value.trim();
-    if (!text) return;
+    const image = offerImageInput.value.trim();
 
-    offers.push({ text });
+    if (!text || !image) {
+      alert("Completa texto e imagen de la oferta.");
+      return;
+    }
+
+    offers.push({ text, image });
     saveOffers(offers);
     offerTextInput.value = "";
+    offerImageInput.value = "";
 
     renderOffers();
     renderAdminOffers();
   });
 }
 
-// Eliminar ofertas (delegación)
+// Eliminar ofertas (delegación para botones)
 document.addEventListener("click", (e) => {
   const btn = e.target;
   if (btn && btn.matches("[data-offer-index]")) {

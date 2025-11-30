@@ -180,9 +180,10 @@ h2 {
 .product-image {
   width: 100%;
   height: 150px;
-  object-fit: cover;
+  object-fit: contain;   /* para que no se deformen */
   border-radius: 0.5rem;
   background: #111827;
+  padding: 0.5rem;
 }
 
 .product-name {
@@ -541,15 +542,73 @@ textarea {
   margin-top: 0.5rem;
 }
 
-.offer-item {
+/* Tarjeta de oferta llamativa */
+.offer-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: radial-gradient(circle at top left, #1d2438, #020617);
+  border-radius: 0.75rem;
+  border: 1px solid #f97316;
+  padding: 0.6rem 0.75rem;
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.35);
+  animation: offerGlow 1.4s ease-in-out infinite alternate, offerIn 0.3s ease-out;
+}
+
+.offer-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 0.75rem;
+  object-fit: contain;
+  background: #020617;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  flex-shrink: 0;
+}
+
+.offer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.9rem;
+}
+
+.offer-text {
+  font-weight: 600;
+}
+
+.offer-badge {
+  display: inline-block;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fed7aa;
+  background: rgba(248, 113, 113, 0.15);
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+/* Para admin, reutilizamos el estilo base de lista */
+.offer-item-admin {
   background: #0f172a;
   border: 1px solid #1f2937;
   padding: 0.75rem;
   border-radius: 0.5rem;
-  font-size: 0.95rem;
-  color: #e5e7eb;
-  animation: offerIn 0.3s ease-out;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
+
+.offer-item-admin img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 0.4rem;
+}
+
+/* Animaciones */
 
 @keyframes offerIn {
   from {
@@ -559,6 +618,17 @@ textarea {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes offerGlow {
+  from {
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.25);
+    transform: translateY(0);
+  }
+  to {
+    box-shadow: 0 0 26px rgba(249, 115, 22, 0.6);
+    transform: translateY(-2px);
   }
 }
 
