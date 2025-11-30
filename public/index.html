@@ -32,11 +32,6 @@
         <span class="brand-badge-prefix">$</span>
         sudo su
       </div>
-
-      <!-- Botón de carrito -->
-      <button id="cart-button" class="cart-button">
-        🛒 <span id="cart-count">0</span>
-      </button>
     </div>
   </header>
 
@@ -184,7 +179,7 @@
         </p>
 
         <div class="payment-box">
-          <p><b>𝑇𝑅𝐴𝑁𝑆𝐹𝐸𝑅𝐄𝑁𝐶𝐼𝐴𝑆</b></p>
+          <p><b>𝑇𝑅𝐴𝑁𝑆𝐹𝐸𝑅𝐸𝑁𝐶𝐼𝐴𝑆</b></p>
           <p>💳 <b id="account-number">638180000124753295</b></p>
           <p>🏦 NU</p>
           <p>👤 Jordan Alvarez</p>
@@ -208,6 +203,16 @@
         <button type="submit" class="btn-primary">Confirmar pedido</button>
       </form>
     </div>
+  </div>
+
+  <!-- BOTÓN FLOTANTE DE CARRITO -->
+  <button id="cart-button" class="cart-fab">
+    🛒 <span id="cart-count">0</span>
+  </button>
+
+  <!-- TOAST DE "AGREGADO AL CARRITO" -->
+  <div id="cart-toast" class="cart-toast">
+    Producto agregado al carrito 🛒
   </div>
 
   <script src="app.js"></script>

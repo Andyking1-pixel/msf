@@ -182,6 +182,12 @@ let offers = loadOffers();
 
 let cart = []; // { productId, quantity }
 
+/* DOM del carrito / toast */
+const cartButton = document.getElementById("cart-button");
+const cartItemsEl = document.getElementById("cart-items");
+const cartTotalEl = document.getElementById("cart-total");
+const cartToastEl = document.getElementById("cart-toast");
+
 function addToCart(productId) {
   const product = products.find((p) => p.id === productId);
   if (!product) return;
@@ -193,6 +199,8 @@ function addToCart(productId) {
     cart.push({ productId, quantity: 1 });
   }
   updateCartCount();
+  animateCartButton();
+  showCartToast();
 }
 
 function updateCartCount() {
@@ -200,6 +208,25 @@ function updateCartCount() {
   if (!cartCountEl) return;
   const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
   cartCountEl.textContent = totalQty;
+}
+
+/* Pequeña animación en el botón flotante */
+function animateCartButton() {
+  if (!cartButton) return;
+  cartButton.classList.remove("cart-bump");
+  // forzar reflow para reiniciar animación
+  void cartButton.offsetWidth;
+  cartButton.classList.add("cart-bump");
+}
+
+/* Toast de “agregado al carrito” */
+function showCartToast() {
+  if (!cartToastEl) return;
+  cartToastEl.classList.add("show");
+  clearTimeout(showCartToast._timeout);
+  showCartToast._timeout = setTimeout(() => {
+    cartToastEl.classList.remove("show");
+  }, 1600);
 }
 
 /* ============================================================
@@ -232,11 +259,6 @@ const offerProductSelect = document.getElementById("offer-product");
 const offerNewPriceInput = document.getElementById("offer-new-price");
 const offerTextInput = document.getElementById("offer-text");
 const adminOffersList = document.getElementById("admin-offers-list");
-
-// Carrito UI
-const cartButton = document.getElementById("cart-button");
-const cartItemsEl = document.getElementById("cart-items");
-const cartTotalEl = document.getElementById("cart-total");
 
 /* ============================================================
    RENDER PRODUCTOS (CON DESCUENTO)
@@ -290,7 +312,6 @@ function renderProducts() {
     btn.addEventListener("click", () => {
       const productId = parseInt(btn.getAttribute("data-id"));
       addToCart(productId);
-      alert("Producto agregado al carrito 🛒");
     });
   });
 }
@@ -491,7 +512,6 @@ if (orderForm) {
       `Cliente: ${buyerName}\n\n` +
       `Fecha: ${new Date().toLocaleString()}`;
 
-    // Enviar al backend de forma general
     const itemsForBackend = cart.map((item) => {
       const product = products.find((p) => p.id === item.productId);
       return {
@@ -522,7 +542,6 @@ if (orderForm) {
 
     alert("Se abrió WhatsApp con el pedido listo para enviar. Revísalo y mándalo desde ahí ✅ gracias por la confianza");
 
-    // Limpiar carrito
     cart = [];
     updateCartCount();
     buyerNameInput.value = "";
@@ -805,16 +824,16 @@ function initAdminPanelVisibility() {
 }
 
 /* ============================================================
-   HEADER TRANSPARENTE AL HACER SCROLL
+   HEADER: DESAPARECE AL HACER SCROLL
    ============================================================ */
 
 const headerEl = document.querySelector(".header");
 window.addEventListener("scroll", () => {
   if (!headerEl) return;
   if (window.scrollY <= 0) {
-    headerEl.classList.remove("header-scrolled");
+    headerEl.classList.remove("header-hidden");
   } else {
-    headerEl.classList.add("header-scrolled");
+    headerEl.classList.add("header-hidden");
   }
 });
 
