@@ -17,7 +17,7 @@ const DEFAULT_PRODUCTS = [
     price: 70,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/netflix-perfil.png"
+    image: "/img/Netflix.png"
   },
   {
     id: 2,
@@ -26,7 +26,7 @@ const DEFAULT_PRODUCTS = [
     price: 200,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/netflix-completa.png"
+    image: "/img/Netflix.png"
   },
   {
     id: 3,
@@ -35,7 +35,7 @@ const DEFAULT_PRODUCTS = [
     price: 45.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/max-perfil.png"
+    image: "/img/hbo.png"
   },
   {
     id: 4,
@@ -44,7 +44,7 @@ const DEFAULT_PRODUCTS = [
     price: 145.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/max-completa.png"
+    image: "/img/hbo.png"
   },
   {
     id: 5,
@@ -53,7 +53,7 @@ const DEFAULT_PRODUCTS = [
     price: 50.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/disney-perfil.png"
+    image: "/img/disneyplus.png"
   },
   {
     id: 6,
@@ -62,7 +62,7 @@ const DEFAULT_PRODUCTS = [
     price: 180.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/disney-completa.png"
+    image: "/img/disneyplus.png"
   },
   {
     id: 7,
@@ -71,7 +71,7 @@ const DEFAULT_PRODUCTS = [
     price: 40.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/vix-perfil.png"
+    image: "/img/vix.png"
   },
   {
     id: 8,
@@ -80,7 +80,7 @@ const DEFAULT_PRODUCTS = [
     price: 65.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/vix-completa.png"
+    image: "/img/vix.png"
   },
   {
     id: 9,
@@ -89,7 +89,7 @@ const DEFAULT_PRODUCTS = [
     price: 40.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/prime-perfil.png"
+    image: "/img/primevideo.png"
   },
   {
     id: 10,
@@ -98,7 +98,7 @@ const DEFAULT_PRODUCTS = [
     price: 70.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/prime-completa.png"
+    image: "/img/primevideo.png"
   },
   {
     id: 11,
@@ -107,7 +107,7 @@ const DEFAULT_PRODUCTS = [
     price: 35.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/crunchy-perfil.png"
+    image: "/img/crunchyroll.png"
   },
   {
     id: 12,
@@ -116,7 +116,7 @@ const DEFAULT_PRODUCTS = [
     price: 65.0,
     originCountry: "Mexico",
     estimatedDeliveryDays: 1,
-    image: "/img/crunchy-completa.png"
+    image: "/img/crunchyroll.png"
   }
 ];
 
@@ -146,7 +146,7 @@ function saveProductsToStorage(products) {
 let products = loadProductsFromStorage();
 
 /* ============================
-   OFERTAS
+   OFERTAS (LIGADAS A PRODUCTOS)
    ============================ */
 
 const OFFERS_KEY = "msf_offers";
@@ -165,7 +165,15 @@ function saveOffers(offers) {
   localStorage.setItem(OFFERS_KEY, JSON.stringify(offers));
 }
 
-// Estructura: { text, image }
+/*
+  Estructura de oferta:
+  {
+    productId: number,
+    previousPrice: number,
+    newPrice: number,
+    text: string
+  }
+*/
 let offers = loadOffers();
 
 /* ============================================================
@@ -197,12 +205,13 @@ const adminProductsTbody = document.getElementById("admin-products-tbody");
 
 // Admin ofertas
 const offerForm = document.getElementById("offer-form");
+const offerProductSelect = document.getElementById("offer-product");
+const offerNewPriceInput = document.getElementById("offer-new-price");
 const offerTextInput = document.getElementById("offer-text");
-const offerImageInput = document.getElementById("offer-image");
 const adminOffersList = document.getElementById("admin-offers-list");
 
 /* ============================================================
-   RENDER PRODUCTOS (CON ANIMACIÓN)
+   RENDER PRODUCTOS (CON ANIMACIÓN Y DESCUENTO)
    ============================================================ */
 
 function renderProducts() {
@@ -219,15 +228,29 @@ function renderProducts() {
     const card = document.createElement("article");
     card.className = "product-card product-card-animate";
 
-    // Delay para que entren en cascada
     card.style.animationDelay = `${index * 0.07}s`;
+
+    const hasDiscount = p.oldPrice && Number(p.oldPrice) > Number(p.price);
+
+    const priceHtml = hasDiscount
+      ? `
+      <p class="product-price">
+        <span class="price-old">$${Number(p.oldPrice).toFixed(2)} MXN</span>
+        <span class="price-new">$${Number(p.price).toFixed(2)} MXN</span>
+      </p>
+    `
+      : `
+      <p class="product-price">
+        <span class="price-new">$${Number(p.price).toFixed(2)} MXN</span>
+      </p>
+    `;
 
     card.innerHTML = `
       <img src="${p.image}" alt="${p.name}" class="product-image">
       <h3 class="product-name">${p.name}</h3>
       <p class="product-desc">${p.description}</p>
       <p class="product-meta">Origen: ${p.originCountry} · Entrega estimada: ${p.estimatedDeliveryDays} días</p>
-      <p class="product-price">$${Number(p.price).toFixed(2)} MXN</p>
+      ${priceHtml}
       <button class="order-btn" data-id="${p.id}">Ordenar</button>
     `;
 
@@ -259,15 +282,28 @@ function renderOffers() {
   }
 
   offers.forEach((offer) => {
+    const product = products.find((p) => p.id === offer.productId);
+    if (!product) return;
+
     const li = document.createElement("li");
     li.className = "offer-card";
 
-    const hasImage = offer.image && offer.image.trim() !== "";
+    const hasDiscount = product.oldPrice && Number(product.oldPrice) > Number(product.price);
 
     li.innerHTML = `
-      ${hasImage ? `<img src="${offer.image}" alt="Oferta" class="offer-image">` : ""}
+      <img src="${product.image}" alt="Oferta" class="offer-image">
       <div class="offer-content">
-        <div class="offer-text">${offer.text}</div>
+        <div class="offer-text">
+          ${offer.text && offer.text.trim() !== "" ? offer.text : product.name}
+        </div>
+        <div class="offer-prices">
+          ${
+            hasDiscount
+              ? `<span class="price-old">$${Number(product.oldPrice).toFixed(2)} MXN</span>`
+              : ""
+          }
+          <span class="price-new">$${Number(product.price).toFixed(2)} MXN</span>
+        </div>
         <span class="offer-badge">Oferta limitada</span>
       </div>
     `;
@@ -311,7 +347,7 @@ if (modalEl) {
    ============================================================ */
 
 function sendOrderToWhatsApp(message) {
-  const phoneNumber = "523328312781"; // tu número
+  const phoneNumber = "523328312781";
   const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank");
 }
@@ -345,7 +381,6 @@ if (orderForm) {
       `Cliente: ${buyerName}\n\n` +
       `Fecha: ${new Date().toLocaleString()}`;
 
-    // Enviar pedido al backend (log / futuro historial)
     fetch("/api/orders", {
       method: "POST",
       headers: {
@@ -363,7 +398,6 @@ if (orderForm) {
       console.error("Error enviando pedido al backend:", err);
     });
 
-    // Enviar a WhatsApp
     sendOrderToWhatsApp(orderMessage);
 
     alert("Se abrió WhatsApp con el pedido listo para enviar. Revísalo y mándalo desde ahí ✅ gracias por la confianza");
@@ -444,6 +478,7 @@ if (productForm) {
       const index = products.findIndex((p) => p.id === Number(id));
       if (index !== -1) {
         products[index] = {
+          ...products[index],
           id: Number(id),
           name,
           description,
@@ -471,6 +506,7 @@ if (productForm) {
     saveProductsToStorage(products);
     renderProducts();
     renderAdminProductList();
+    renderOfferProductOptions();
     alert("Producto guardado correctamente ✅");
     clearAdminForm();
   });
@@ -484,6 +520,17 @@ if (newProductBtn) {
    PANEL ADMIN – OFERTAS
    ============================================================ */
 
+function renderOfferProductOptions() {
+  if (!offerProductSelect) return;
+  offerProductSelect.innerHTML = `<option value="">Selecciona un producto</option>`;
+  products.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.id} – ${p.name}`;
+    offerProductSelect.appendChild(opt);
+  });
+}
+
 function renderAdminOffers() {
   if (!adminOffersList) return;
 
@@ -495,55 +542,105 @@ function renderAdminOffers() {
   }
 
   offers.forEach((offer, index) => {
+    const product = products.find((p) => p.id === offer.productId);
+
     const li = document.createElement("li");
     li.className = "offer-item-admin";
 
-    const hasImage = offer.image && offer.image.trim() !== "";
+    if (!product) {
+      li.textContent = `Oferta ${index + 1} (producto no encontrado)`;
+    } else {
+      li.innerHTML = `
+        <img src="${product.image}" alt="Oferta">
+        <div>
+          <div><strong>${product.name}</strong></div>
+          <div style="font-size:0.85rem;">
+            ${offer.text ? offer.text + "<br>" : ""}
+            <span class="price-old">$${Number(offer.previousPrice).toFixed(2)} MXN</span>
+            <span class="price-new">$${Number(product.price).toFixed(2)} MXN</span>
+          </div>
+        </div>
+        <button data-offer-index="${index}" class="btn-secondary" style="margin-left:auto;font-size:0.8rem;">
+          Quitar oferta
+        </button>
+      `;
+    }
 
-    li.innerHTML = `
-      ${hasImage ? `<img src="${offer.image}" alt="Oferta">` : ""}
-      <span>${offer.text}</span>
-      <button data-offer-index="${index}" class="btn-secondary" style="margin-left:auto;font-size:0.8rem;">
-        Eliminar
-      </button>
-    `;
     adminOffersList.appendChild(li);
   });
 }
 
-if (offerForm && offerTextInput && offerImageInput) {
+if (offerForm && offerProductSelect && offerNewPriceInput) {
   offerForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
+    const productId = parseInt(offerProductSelect.value);
+    const newPrice = parseFloat(offerNewPriceInput.value);
     const text = offerTextInput.value.trim();
-    const image = offerImageInput.value.trim();
 
-    if (!text || !image) {
-      alert("Completa texto e imagen de la oferta.");
+    if (!productId || isNaN(newPrice)) {
+      alert("Selecciona un producto y pon un nuevo precio.");
       return;
     }
 
-    offers.push({ text, image });
-    saveOffers(offers);
-    offerTextInput.value = "";
-    offerImageInput.value = "";
+    const product = products.find((p) => p.id === productId);
+    if (!product) {
+      alert("Producto no encontrado.");
+      return;
+    }
 
+    const previousPrice = Number(product.price);
+
+    // Actualizar producto con descuento
+    product.oldPrice = previousPrice;
+    product.price = newPrice;
+
+    // Eliminar oferta previa de ese producto si ya existía
+    offers = offers.filter((o) => o.productId !== productId);
+
+    offers.push({
+      productId,
+      previousPrice,
+      newPrice,
+      text
+    });
+
+    saveProductsToStorage(products);
+    saveOffers(offers);
+
+    offerNewPriceInput.value = "";
+    offerTextInput.value = "";
+    offerProductSelect.value = "";
+
+    renderProducts();
     renderOffers();
     renderAdminOffers();
+
+    alert("Oferta aplicada al producto ✅");
   });
 }
 
-// Eliminar ofertas (delegación para botones)
+// Quitar oferta y restaurar precio original
 document.addEventListener("click", (e) => {
   const btn = e.target;
   if (btn && btn.matches("[data-offer-index]")) {
     const index = parseInt(btn.getAttribute("data-offer-index"));
-    if (!isNaN(index)) {
-      offers.splice(index, 1);
-      saveOffers(offers);
-      renderOffers();
-      renderAdminOffers();
+    if (isNaN(index) || !offers[index]) return;
+
+    const offer = offers[index];
+    const product = products.find((p) => p.id === offer.productId);
+
+    if (product) {
+      product.price = offer.previousPrice;
+      delete product.oldPrice;
+      saveProductsToStorage(products);
+      renderProducts();
     }
+
+    offers.splice(index, 1);
+    saveOffers(offers);
+    renderOffers();
+    renderAdminOffers();
   }
 });
 
@@ -558,7 +655,6 @@ function initAdminPanelVisibility() {
   const wantsAdmin = params.get("admin") === "1";
 
   if (!wantsAdmin) {
-    // Si no trae ?admin=1, no mostramos nada
     return;
   }
 
@@ -566,6 +662,7 @@ function initAdminPanelVisibility() {
   if (alreadyLogged) {
     adminPanelEl.classList.remove("hidden");
     renderAdminProductList();
+    renderOfferProductOptions();
     renderAdminOffers();
     return;
   }
@@ -576,6 +673,7 @@ function initAdminPanelVisibility() {
     localStorage.setItem(ADMIN_LOGGED_KEY, "true");
     adminPanelEl.classList.remove("hidden");
     renderAdminProductList();
+    renderOfferProductOptions();
     renderAdminOffers();
   } else {
     alert("Contraseña incorrecta. Acceso denegado.");

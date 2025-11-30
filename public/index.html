@@ -84,7 +84,7 @@
 
         <label>
           URL de la imagen (producto)
-          <input type="text" id="admin-image" required placeholder="/img/netflix-perfil.png">
+          <input type="text" id="admin-image" required placeholder="/img/Netflix.png">
         </label>
 
         <div class="admin-buttons">
@@ -114,16 +114,25 @@
       <h3 style="margin-top:2rem;">🔥 Ofertas</h3>
 
       <form id="offer-form" class="admin-form">
-        <label style="grid-column: 1 / -1;">
-          Texto de la oferta
-          <input type="text" id="offer-text" required placeholder="Ej: Disney Premium + Netflix por $200 MXN">
+        <label>
+          Producto en oferta
+          <select id="offer-product" required>
+            <option value="">Selecciona un producto</option>
+          </select>
         </label>
-        <label style="grid-column: 1 / -1;">
-          URL de la imagen de la oferta
-          <input type="text" id="offer-image" required placeholder="/img/oferta-disney-netflix.png">
+
+        <label>
+          Nuevo precio (MXN)
+          <input type="number" id="offer-new-price" step="0.01" min="0" required>
         </label>
+
+        <label style="grid-column: 1 / -1;">
+          Texto de la oferta (opcional)
+          <input type="text" id="offer-text" placeholder="Ej: Promo de este mes">
+        </label>
+
         <div class="admin-buttons">
-          <button type="submit" class="btn-primary">Agregar oferta</button>
+          <button type="submit" class="btn-primary">Aplicar oferta</button>
         </div>
       </form>
 
