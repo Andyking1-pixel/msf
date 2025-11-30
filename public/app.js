@@ -177,6 +177,32 @@ function saveOffers(offers) {
 let offers = loadOffers();
 
 /* ============================================================
+   CARRITO
+   ============================================================ */
+
+let cart = []; // { productId, quantity }
+
+function addToCart(productId) {
+  const product = products.find((p) => p.id === productId);
+  if (!product) return;
+
+  const existing = cart.find((item) => item.productId === productId);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ productId, quantity: 1 });
+  }
+  updateCartCount();
+}
+
+function updateCartCount() {
+  const cartCountEl = document.getElementById("cart-count");
+  if (!cartCountEl) return;
+  const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
+  cartCountEl.textContent = totalQty;
+}
+
+/* ============================================================
    ELEMENTOS DEL DOM
    ============================================================ */
 
@@ -185,10 +211,7 @@ const modalEl = document.getElementById("order-modal");
 const closeModalBtn = document.getElementById("close-modal");
 const orderForm = document.getElementById("order-form");
 
-const productIdInput = document.getElementById("product-id");
 const buyerNameInput = document.getElementById("buyer-name");
-const quantityInput = document.getElementById("quantity");
-const modalProductNameEl = document.getElementById("modal-product-name");
 
 // Panel admin
 const adminPanelEl = document.getElementById("admin-panel");
@@ -210,8 +233,13 @@ const offerNewPriceInput = document.getElementById("offer-new-price");
 const offerTextInput = document.getElementById("offer-text");
 const adminOffersList = document.getElementById("admin-offers-list");
 
+// Carrito UI
+const cartButton = document.getElementById("cart-button");
+const cartItemsEl = document.getElementById("cart-items");
+const cartTotalEl = document.getElementById("cart-total");
+
 /* ============================================================
-   RENDER PRODUCTOS (CON ANIMACIÓN Y DESCUENTO)
+   RENDER PRODUCTOS (CON DESCUENTO)
    ============================================================ */
 
 function renderProducts() {
@@ -251,7 +279,7 @@ function renderProducts() {
       <p class="product-desc">${p.description}</p>
       <p class="product-meta">Origen: ${p.originCountry} · Entrega estimada: ${p.estimatedDeliveryDays} días</p>
       ${priceHtml}
-      <button class="order-btn" data-id="${p.id}">Ordenar</button>
+      <button class="order-btn" data-id="${p.id}">Agregar al carrito</button>
     `;
 
     productsListEl.appendChild(card);
@@ -261,7 +289,8 @@ function renderProducts() {
   orderButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const productId = parseInt(btn.getAttribute("data-id"));
-      openOrderModal(productId);
+      addToCart(productId);
+      alert("Producto agregado al carrito 🛒");
     });
   });
 }
@@ -313,25 +342,96 @@ function renderOffers() {
 }
 
 /* ============================================================
-   MODAL DE PEDIDO
+   MODAL DE CARRITO
    ============================================================ */
 
-function openOrderModal(productId) {
-  const product = products.find((p) => p.id === productId);
-  if (!product) return;
+function renderCartModal() {
+  if (!cartItemsEl || !cartTotalEl) return;
 
-  productIdInput.value = product.id;
-  modalProductNameEl.textContent = `Producto: ${product.name} – $${Number(product.price).toFixed(2)} MXN`;
-  quantityInput.value = 1;
+  if (!cart.length) {
+    cartItemsEl.innerHTML = `<div class="cart-items-empty">Tu carrito está vacío 🛒</div>`;
+    cartTotalEl.textContent = "";
+    return;
+  }
+
+  cartItemsEl.innerHTML = "";
+  let total = 0;
+
+  cart.forEach((item) => {
+    const product = products.find((p) => p.id === item.productId);
+    if (!product) return;
+
+    const unitPrice = Number(product.price);
+    const subtotal = unitPrice * item.quantity;
+    total += subtotal;
+
+    const row = document.createElement("div");
+    row.className = "cart-item-row";
+    row.innerHTML = `
+      <div class="cart-item-info">
+        <div class="cart-item-name">${product.name}</div>
+        <div class="cart-item-line">
+          $${unitPrice.toFixed(2)} MXN x ${item.quantity} = $${subtotal.toFixed(2)} MXN
+        </div>
+      </div>
+      <div class="cart-item-actions">
+        <button class="cart-item-btn" data-cart-action="dec" data-product-id="${product.id}">−</button>
+        <span>${item.quantity}</span>
+        <button class="cart-item-btn" data-cart-action="inc" data-product-id="${product.id}">+</button>
+        <button class="cart-item-btn" data-cart-action="remove" data-product-id="${product.id}">✖</button>
+      </div>
+    `;
+    cartItemsEl.appendChild(row);
+  });
+
+  cartTotalEl.textContent = `Total: $${total.toFixed(2)} MXN`;
+}
+
+function openCartModal() {
+  if (!modalEl) return;
+  renderCartModal();
   modalEl.classList.remove("hidden");
 }
 
 function closeOrderModal() {
+  if (!modalEl) return;
   modalEl.classList.add("hidden");
-  if (orderForm) orderForm.reset();
-  modalProductNameEl.textContent = "";
 }
 
+/* Eventos de carrito en el modal */
+if (cartButton) {
+  cartButton.addEventListener("click", () => {
+    openCartModal();
+  });
+}
+
+if (cartItemsEl) {
+  cartItemsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-cart-action]");
+    if (!btn) return;
+
+    const action = btn.getAttribute("data-cart-action");
+    const productId = parseInt(btn.getAttribute("data-product-id"));
+    const item = cart.find((it) => it.productId === productId);
+    if (!item) return;
+
+    if (action === "inc") {
+      item.quantity += 1;
+    } else if (action === "dec") {
+      item.quantity -= 1;
+      if (item.quantity <= 0) {
+        cart = cart.filter((it) => it.productId !== productId);
+      }
+    } else if (action === "remove") {
+      cart = cart.filter((it) => it.productId !== productId);
+    }
+
+    updateCartCount();
+    renderCartModal();
+  });
+}
+
+/* Cerrar modal */
 if (closeModalBtn) {
   closeModalBtn.addEventListener("click", closeOrderModal);
 }
@@ -353,33 +453,55 @@ function sendOrderToWhatsApp(message) {
 }
 
 /* ============================================================
-   FORMULARIO PÚBLICO (PEDIDO)
+   FORMULARIO DE PEDIDO (USA CARRITO)
    ============================================================ */
 
 if (orderForm) {
   orderForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const productId = parseInt(productIdInput.value);
-    const product = products.find((p) => p.id === productId);
-
-    const buyerName = buyerNameInput.value.trim();
-    const quantity = parseInt(quantityInput.value);
-
-    if (!product || !buyerName || quantity < 1) {
-      alert("Por favor completa todos los campos correctamente.");
+    if (!cart.length) {
+      alert("Tu carrito está vacío.");
       return;
     }
 
-    const totalAmount = Number(product.price) * quantity;
+    const buyerName = buyerNameInput.value.trim();
+    if (!buyerName) {
+      alert("Por favor escribe tu nombre.");
+      return;
+    }
+
+    let totalAmount = 0;
+    let lines = "";
+
+    cart.forEach((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      if (!product) return;
+      const unitPrice = Number(product.price);
+      const subtotal = unitPrice * item.quantity;
+      totalAmount += subtotal;
+
+      lines += `- ${product.name} x${item.quantity} – $${subtotal.toFixed(2)} MXN\n`;
+    });
 
     const orderMessage =
       `MSF – Nuevo pedido:\n\n` +
-      `Producto: ${product.name}\n` +
-      `Cantidad: ${quantity}\n` +
+      `Productos:\n${lines}\n` +
       `Total: $${totalAmount.toFixed(2)} MXN\n\n` +
       `Cliente: ${buyerName}\n\n` +
       `Fecha: ${new Date().toLocaleString()}`;
+
+    // Enviar al backend de forma general
+    const itemsForBackend = cart.map((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      return {
+        productId: item.productId,
+        productName: product ? product.name : "",
+        quantity: item.quantity,
+        unitPrice: product ? Number(product.price) : 0,
+        subtotal: product ? Number(product.price) * item.quantity : 0
+      };
+    });
 
     fetch("/api/orders", {
       method: "POST",
@@ -387,10 +509,8 @@ if (orderForm) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        productId: product.id,
-        productName: product.name,
+        items: itemsForBackend,
         buyerName,
-        quantity,
         totalAmount,
         createdAt: new Date().toISOString()
       })
@@ -402,6 +522,10 @@ if (orderForm) {
 
     alert("Se abrió WhatsApp con el pedido listo para enviar. Revísalo y mándalo desde ahí ✅ gracias por la confianza");
 
+    // Limpiar carrito
+    cart = [];
+    updateCartCount();
+    buyerNameInput.value = "";
     closeOrderModal();
   });
 }
@@ -595,7 +719,7 @@ if (offerForm && offerProductSelect && offerNewPriceInput) {
     product.oldPrice = previousPrice;
     product.price = newPrice;
 
-    // Eliminar oferta previa de ese producto si ya existía
+    // Quitar oferta previa de ese producto si ya existía
     offers = offers.filter((o) => o.productId !== productId);
 
     offers.push({
@@ -681,11 +805,26 @@ function initAdminPanelVisibility() {
 }
 
 /* ============================================================
+   HEADER TRANSPARENTE AL HACER SCROLL
+   ============================================================ */
+
+const headerEl = document.querySelector(".header");
+window.addEventListener("scroll", () => {
+  if (!headerEl) return;
+  if (window.scrollY <= 0) {
+    headerEl.classList.remove("header-scrolled");
+  } else {
+    headerEl.classList.add("header-scrolled");
+  }
+});
+
+/* ============================================================
    INICIALIZACIÓN GENERAL
    ============================================================ */
 
 renderProducts();
 renderOffers();
+updateCartCount();
 initAdminPanelVisibility();
 
 /* ============================

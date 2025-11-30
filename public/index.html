@@ -17,26 +17,35 @@
 
   <link rel="stylesheet" href="styles.css">
 </head>
-<header class="header">
-  <h1>
-    <span class="logo-text">MSF</span>
-    <span class="logo-globe">🌍</span>
-  </h1>
-  <p>Compra productos sin complicarte la vida.</p>
 
-  <!-- Distintivo de la empresa -->
-  <div class="brand-badge">
-    <span class="brand-badge-prefix">$</span>
-    sudo su
-  </div>
-</header>
+<body>
+  <header class="header">
+    <h1>
+      <span class="logo-text">MSF</span>
+      <span class="logo-globe">🌍</span>
+    </h1>
+    <p>Compra productos sin complicarte la vida.</p>
 
-  <!-- 🔝 INFO IMPORTANTE AL PRINCIPIO -->
+    <div class="header-actions">
+      <!-- Distintivo de la empresa -->
+      <div class="brand-badge">
+        <span class="brand-badge-prefix">$</span>
+        sudo su
+      </div>
+
+      <!-- Botón de carrito -->
+      <button id="cart-button" class="cart-button">
+        🛒 <span id="cart-count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- INFO IMPORTANTE AL PRINCIPIO -->
   <section class="orders-section">
     <h2>¿Cómo se gestionan los pedidos?</h2>
     <h3>Todos los pedidos se envían directamente a tu WhatsApp.</h3>
     <p>Todas las cuentas son legales y 100% seguras.</p>
-    <p>Cualquier duda contáctame: <b>+523328312781</b></p>
+    <p>Cualquier duda contáctame: <b>+52 332 831 2781</b></p>
   </section>
 
   <!-- OFERTAS VISIBLES PARA EL CLIENTE -->
@@ -154,12 +163,16 @@
     </section>
   </main>
 
-  <!-- MODAL PARA HACER PEDIDO -->
+  <!-- MODAL PARA CARRITO -->
   <div id="order-modal" class="modal hidden">
     <div class="modal-content">
       <button id="close-modal" class="close-btn">✖</button>
-      <h2>Hacer pedido</h2>
-      <p id="modal-product-name"></p>
+      <h2>Tu carrito</h2>
+
+      <div id="cart-items" class="cart-items">
+        <!-- Items del carrito -->
+      </div>
+      <p id="cart-total" class="cart-total"></p>
 
       <!-- MÉTODOS DE PAGO -->
       <div class="payment-info">
@@ -185,19 +198,11 @@
         </div>
       </div>
 
-      <!-- FORMULARIO DEL PEDIDO -->
+      <!-- FORMULARIO DEL PEDIDO (NOMBRE) -->
       <form id="order-form" style="margin-top:1rem;">
-        <input type="hidden" id="product-id">
-
         <label>
           Tu nombre:
           <input type="text" id="buyer-name" required>
-        </label>
-
-        <label>
-          Cantidad:
-          <input type="number" id="quantity" min="1" value="1" required>
-          <span class="field-hint">Pon cuántas cuentas quieres (1, 2, 3...), no el precio 😊</span>
         </label>
 
         <button type="submit" class="btn-primary">Confirmar pedido</button>

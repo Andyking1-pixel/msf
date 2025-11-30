@@ -22,7 +22,7 @@ body {
 
 .header {
   text-align: center;
-  padding: 1.8rem 1rem 1.5rem;
+  padding: 1.8rem 1rem 1.2rem;
   background: rgba(2, 6, 23, 0.98);
   border-bottom: 1px solid #1f2937;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
@@ -31,6 +31,18 @@ body {
   z-index: 20;
   backdrop-filter: blur(16px);
   animation: headerIn 0.6s ease-out;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    opacity 0.3s ease;
+}
+
+/* Cuando bajas, se vuelve transparente y sin sombra */
+.header-scrolled {
+  background: transparent;
+  box-shadow: none;
+  border-bottom-color: transparent;
 }
 
 @keyframes headerIn {
@@ -53,47 +65,6 @@ body {
   color: #9ca3af;
   font-size: 0.95rem;
   letter-spacing: 0.03em;
-}
-/* Distintivo de marca "sudo su" */
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.6rem;
-  padding: 0.2rem 0.7rem;
-  border-radius: 999px;
-  background: radial-gradient(circle at top left, rgba(22, 163, 74, 0.15), rgba(15, 23, 42, 0.9));
-  border: 1px solid rgba(34, 197, 94, 0.7);
-  font-size: 0.78rem;
-  text-transform: lowercase;
-  letter-spacing: 0.12em;
-  color: #bbf7d0;
-  box-shadow: 0 0 14px rgba(34, 197, 94, 0.35);
-  animation: brandPulse 2.4s ease-in-out infinite;
-}
-
-.brand-badge-prefix {
-  font-weight: 700;
-  color: #4ade80;
-}
-
-/* Animación suave tipo “led” */
-@keyframes brandPulse {
-  0% {
-    box-shadow: 0 0 6px rgba(34, 197, 94, 0.25);
-    transform: translateY(0);
-    opacity: 0.9;
-  }
-  50% {
-    box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
-    transform: translateY(-1px);
-    opacity: 1;
-  }
-  100% {
-    box-shadow: 0 0 6px rgba(34, 197, 94, 0.25);
-    transform: translateY(0);
-    opacity: 0.9;
-  }
 }
 
 /* LOGO MSF */
@@ -142,6 +113,84 @@ body {
   100% {
     transform: translateY(0) rotate(0deg);
   }
+}
+
+/* Distintivo de marca "sudo su" */
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at top left, rgba(22, 163, 74, 0.15), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(34, 197, 94, 0.7);
+  font-size: 0.78rem;
+  text-transform: lowercase;
+  letter-spacing: 0.12em;
+  color: #bbf7d0;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.35);
+  animation: brandPulse 2.4s ease-in-out infinite;
+}
+
+.brand-badge-prefix {
+  font-weight: 700;
+  color: #4ade80;
+}
+
+/* Animación suave tipo “led” */
+@keyframes brandPulse {
+  0% {
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.25);
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
+    transform: translateY(-1px);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.25);
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+}
+
+/* Acciones en el header (badge + carrito) */
+.header-actions {
+  margin-top: 0.6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Botón de carrito */
+.cart-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.cart-button:hover {
+  background: #111827;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.7);
+}
+
+#cart-count {
+  font-weight: 700;
 }
 
 /* ========================= */
@@ -221,7 +270,7 @@ h2 {
 .product-image {
   width: 100%;
   height: 150px;
-  object-fit: contain;   /* importantes para que no se deformen */
+  object-fit: contain;
   border-radius: 0.5rem;
   background: #111827;
   padding: 0.5rem;
@@ -331,14 +380,16 @@ h2 {
 }
 
 /* ========================= */
-/* PANEL DE INFO DERECHA */
+/* PANEL DE INFO ARRIBA */
 /* ========================= */
 
 .orders-section {
+  max-width: 1100px;
+  margin: 1.2rem auto 0.5rem;
+  padding: 1rem;
   background: rgba(2, 6, 23, 0.95);
   border-radius: 0.75rem;
   border: 1px solid #1f2937;
-  padding: 1rem;
   animation: fadeIn 0.4s ease;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
 }
@@ -365,7 +416,7 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 30;
 }
 
 .hidden {
@@ -378,7 +429,7 @@ h2 {
   border: 1px solid #1f2937;
   padding: 1rem;
   width: 95%;
-  max-width: 420px;
+  max-width: 480px;
   position: relative;
   animation: modalIn 0.25s ease-out;
 }
@@ -409,12 +460,7 @@ h2 {
   margin-bottom: 0.25rem;
 }
 
-#modal-product-name {
-  color: #9ca3af;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
-}
-
+/* formulario general */
 form {
   display: flex;
   flex-direction: column;
@@ -442,6 +488,13 @@ textarea {
 textarea {
   resize: vertical;
   min-height: 60px;
+}
+
+/* hint de campo */
+.field-hint {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.15rem;
 }
 
 /* ========================= */
@@ -489,7 +542,6 @@ textarea {
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-/* Cuando no está hidden */
 .admin-panel:not(.hidden) {
   opacity: 1;
   transform: translateY(0);
@@ -566,10 +618,6 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .orders-section {
-    max-height: none;
-  }
-
   .admin-form {
     grid-template-columns: 1fr;
   }
@@ -581,7 +629,7 @@ textarea {
 
 .offers-section {
   max-width: 1100px;
-  margin: 1.5rem auto 0.5rem;
+  margin: 0.8rem auto 0.5rem;
   padding: 0 1rem 1rem;
 }
 
@@ -669,7 +717,7 @@ textarea {
   border-radius: 0.4rem;
 }
 
-/* Animaciones */
+/* Animaciones ofertas */
 
 @keyframes offerIn {
   from {
@@ -692,9 +740,73 @@ textarea {
     transform: translateY(-2px);
   }
 }
-.field-hint {
-  font-size: 0.75rem;
+
+/* ========================= */
+/* CARRITO EN EL MODAL */
+/* ========================= */
+
+.cart-items {
+  margin: 0.5rem 0;
+  border-radius: 0.5rem;
+  background: #020617;
+  border: 1px solid #1f2937;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+
+.cart-items-empty {
+  padding: 0.6rem;
+  text-align: center;
   color: #9ca3af;
-  margin-top: 0.15rem;
+}
+
+.cart-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #111827;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-name {
+  font-weight: 600;
+}
+
+.cart-item-line {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.6rem;
+}
+
+.cart-item-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  background: #1f2937;
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.cart-item-btn:hover {
+  background: #111827;
+}
+
+.cart-total {
+  margin-top: 0.4rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: right;
 }
 
