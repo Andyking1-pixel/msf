@@ -23,7 +23,7 @@ app.use("/api/offers", offerRoutes);
 app.use("/api/orders", orderRoutes);
 
 // SPA fallback
-app.get("*", (req, res) => {
+app.get((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
