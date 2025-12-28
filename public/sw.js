@@ -1,5 +1,5 @@
 // Versión del caché (puedes subirla cuando hagas cambios grandes)
-const CACHE_NAME = "msf-cache-v3";
+const CACHE_NAME = "msf-cache-v5";
 
 // Archivos base que queremos tener cacheados para offline
 const ASSETS = [
