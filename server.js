@@ -8,10 +8,17 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Archivo donde guardamos productos y ofertas
-const DATA_FILE = path.join(__dirname, "data.json");
+/* ============================
+   ARCHIVOS DE DATOS
+   ============================ */
 
-// Productos por defecto (con URLs que te gustaban)
+const DATA_FILE = path.join(__dirname, "data.json");
+const ORDERS_FILE = path.join(__dirname, "orders.json");
+
+/* ============================
+   DATA INICIAL
+   ============================ */
+
 const DEFAULT_DATA = {
   products: [
     {
@@ -21,168 +28,68 @@ const DEFAULT_DATA = {
       price: 70,
       originCountry: "Mexico",
       estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Netflix-new-icon.png"
-    },
-    {
-      id: 2,
-      name: "Netflix",
-      description: "Netflix Completa.",
-      price: 200,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Netflix-new-icon.png"
-    },
-    {
-      id: 3,
-      name: "Max Platino Perfil",
-      description: "Perfil Max.",
-      price: 45.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg"
-    },
-    {
-      id: 4,
-      name: "Max Platino",
-      description: "Max Platino Completa.",
-      price: 145.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg"
-    },
-    {
-      id: 5,
-      name: "Disney premium Perfil",
-      description: "Perfil Disney.",
-      price: 50.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg"
-    },
-    {
-      id: 6,
-      name: "Disney premium",
-      description: "Disney premium Completa.",
-      price: 180.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg"
-    },
-    {
-      id: 7,
-      name: "Vix 2 meses Perfil",
-      description: "Perfil Vix Premium.",
-      price: 40.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/ViX_Logo.svg"
-    },
-    {
-      id: 8,
-      name: "Vix 2 meses",
-      description: "Vix Premium Completa.",
-      price: 65.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/ViX_Logo.svg"
-    },
-    {
-      id: 9,
-      name: "Prime Video Perfil",
-      description: "Perfil Prime Video.",
-      price: 40.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg"
-    },
-    {
-      id: 10,
-      name: "Prime Video",
-      description: "Prime Video Completa.",
-      price: 70.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg"
-    },
-    {
-      id: 11,
-      name: "Crunchyroll Perfil",
-      description: "Perfil Crunchyroll.",
-      price: 35.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Crunchyroll_Logo.svg"
-    },
-    {
-      id: 12,
-      name: "Crunchyroll",
-      description: "Crunchyroll Completa.",
-      price: 65.0,
-      originCountry: "Mexico",
-      estimatedDeliveryDays: 1,
-      image: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Crunchyroll_Logo.svg"
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/f/ff/Netflix-new-icon.png"
     }
   ],
   offers: []
 };
 
-function loadData() {
+/* ============================
+   HELPERS DATA
+   ============================ */
+
+function loadJSON(file, fallback) {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const raw = fs.readFileSync(DATA_FILE, "utf8");
-      const parsed = JSON.parse(raw);
-      return {
-        products:
-          Array.isArray(parsed.products) && parsed.products.length
-            ? parsed.products
-            : DEFAULT_DATA.products,
-        offers: Array.isArray(parsed.offers) ? parsed.offers : []
-      };
+    if (fs.existsSync(file)) {
+      return JSON.parse(fs.readFileSync(file, "utf8"));
     }
   } catch (err) {
-    console.error("Error leyendo data.json, usando valores por defecto:", err);
+    console.error(`Error leyendo ${file}`, err);
   }
-  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  return JSON.parse(JSON.stringify(fallback));
 }
 
-let db = loadData();
-
-function saveData() {
+function saveJSON(file, data) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2), "utf8");
+    fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
   } catch (err) {
-    console.error("Error guardando data.json:", err);
+    console.error(`Error guardando ${file}`, err);
   }
 }
 
-/* =========
+let db = loadJSON(DATA_FILE, DEFAULT_DATA);
+let ordersDB = loadJSON(ORDERS_FILE, { orders: [] });
+
+/* ============================
    PRODUCTOS
-   ========= */
+   ============================ */
 
 app.get("/api/products", (req, res) => {
   res.json(db.products);
 });
 
 app.post("/api/products", (req, res) => {
-  const { name, description, price, originCountry, estimatedDeliveryDays, image } =
-    req.body || {};
+  const {
+    name,
+    description,
+    price,
+    originCountry,
+    estimatedDeliveryDays,
+    image
+  } = req.body;
 
-  if (
-    !name ||
-    !description ||
-    typeof price !== "number" ||
-    !originCountry ||
-    typeof estimatedDeliveryDays !== "number" ||
-    !image
-  ) {
-    return res.status(400).json({ error: "Datos de producto inválidos" });
+  if (!name || !description || typeof price !== "number") {
+    return res.status(400).json({ error: "Datos inválidos" });
   }
 
-  const newId =
-    db.products.length > 0 ? Math.max(...db.products.map((p) => p.id)) + 1 : 1;
+  const id =
+    db.products.length > 0
+      ? Math.max(...db.products.map((p) => p.id)) + 1
+      : 1;
 
   const product = {
-    id: newId,
+    id,
     name,
     description,
     price,
@@ -192,96 +99,78 @@ app.post("/api/products", (req, res) => {
   };
 
   db.products.push(product);
-  saveData();
+  saveJSON(DATA_FILE, db);
   res.status(201).json(product);
 });
 
-app.put("/api/products/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const index = db.products.findIndex((p) => p.id === id);
-  if (index === -1) return res.status(404).json({ error: "Producto no encontrado" });
-
-  const update = req.body || {};
-  db.products[index] = { ...db.products[index], ...update, id };
-  saveData();
-  res.json(db.products[index]);
-});
-
-/* =======
+/* ============================
    OFERTAS
-   ======= */
+   ============================ */
 
 app.get("/api/offers", (req, res) => {
   res.json(db.offers);
 });
 
 app.post("/api/offers", (req, res) => {
-  const { productId, newPrice, text } = req.body || {};
-  const id = parseInt(productId);
-  const product = db.products.find((p) => p.id === id);
+  const { productId, newPrice, text } = req.body;
+  const product = db.products.find((p) => p.id === productId);
 
   if (!product || typeof newPrice !== "number") {
-    return res.status(400).json({ error: "Datos de oferta inválidos" });
+    return res.status(400).json({ error: "Oferta inválida" });
   }
 
-  const previousPrice =
-    typeof product.oldPrice === "number" ? product.oldPrice : product.price;
-
+  const previousPrice = product.price;
   product.oldPrice = previousPrice;
   product.price = newPrice;
 
-  db.offers = db.offers.filter((o) => o.productId !== id);
-
-  const offer = {
-    productId: id,
+  db.offers = db.offers.filter((o) => o.productId !== productId);
+  db.offers.push({
+    productId,
     previousPrice,
     newPrice,
-    text: text || ""
-  };
+    text
+  });
 
-  db.offers.push(offer);
-  saveData();
-  res.status(201).json(offer);
+  saveJSON(DATA_FILE, db);
+  res.status(201).json({ ok: true });
 });
 
-app.delete("/api/offers/:productId", (req, res) => {
-  const id = parseInt(req.params.productId);
-  const index = db.offers.findIndex((o) => o.productId === id);
-  if (index === -1) {
-    return res.status(404).json({ error: "Oferta no encontrada" });
-  }
-
-  const offer = db.offers[index];
-  const product = db.products.find((p) => p.id === id);
-
-  if (product && typeof offer.previousPrice === "number") {
-    product.price = offer.previousPrice;
-    delete product.oldPrice;
-  }
-
-  db.offers.splice(index, 1);
-  saveData();
-  res.json({ success: true });
-});
-
-/* =======
-   PEDIDOS
-   ======= */
+/* ============================
+   PEDIDOS (NUEVO)
+   ============================ */
 
 app.post("/api/orders", (req, res) => {
-  console.log("Nuevo pedido recibido:", req.body);
-  res.json({ ok: true });
+  const { items, buyerName, totalAmount, createdAt } = req.body;
+
+  if (!items || !buyerName || typeof totalAmount !== "number") {
+    return res.status(400).json({ error: "Pedido inválido" });
+  }
+
+  const order = {
+    id: ordersDB.orders.length + 1,
+    buyerName,
+    items,
+    totalAmount,
+    createdAt: createdAt || new Date().toISOString(),
+    status: "nuevo"
+  };
+
+  ordersDB.orders.push(order);
+  saveJSON(ORDERS_FILE, ordersDB);
+
+  console.log("Pedido guardado:", order.id);
+  res.json({ ok: true, orderId: order.id });
 });
 
-/* ==========
+/* ============================
    FRONTEND
-   ========== */
+   ============================ */
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`MSF backend escuchando en http://localhost:${PORT}`);
+  console.log(`MSF backend corriendo en http://localhost:${PORT}`);
 });
 
