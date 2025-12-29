@@ -1,52 +1,58 @@
 /* ============================================================
+   CONFIG ADMIN
+============================================================ */
+
+const ADMIN_PASSWORD = "753951Andy";
+const ADMIN_LOGGED_KEY = "msf_admin_logged_in";
+
+/* ============================================================
    ESTADO GLOBAL
-   ============================================================ */
+============================================================ */
 
 let products = [];
-let offers = [];
 let cart = [];
 
 /* ============================================================
    ELEMENTOS DOM
-   ============================================================ */
+============================================================ */
 
 const productsListEl = document.getElementById("products-list");
 const cartButton = document.getElementById("cart-button");
-const cartCountEl = document.getElementById("cart-count");
+const cartItemsEl = document.getElementById("cart-items");
+const cartTotalEl = document.getElementById("cart-total");
+const modalEl = document.getElementById("order-modal");
+const closeModalBtn = document.getElementById("close-modal");
+const buyerNameInput = document.getElementById("buyer-name");
+
+/* ADMIN */
+const adminPanelEl = document.getElementById("admin-panel");
+const productForm = document.getElementById("product-form");
+const adminProductsTbody = document.getElementById("admin-products-tbody");
 
 /* ============================================================
-   API HELPERS
-   ============================================================ */
+   CARGAR PRODUCTOS DESDE MONGODB
+============================================================ */
 
-async function fetchProducts() {
+async function loadProducts() {
   try {
     const res = await fetch("/api/products");
     products = await res.json();
     renderProducts();
+    renderAdminProductList();
   } catch (err) {
     console.error("Error cargando productos:", err);
   }
 }
 
-async function createProduct(product) {
-  const res = await fetch("/api/products", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(product),
-  });
-  return res.json();
-}
-
 /* ============================================================
    RENDER PRODUCTOS
-   ============================================================ */
+============================================================ */
 
 function renderProducts() {
   if (!productsListEl) return;
-
   productsListEl.innerHTML = "";
 
-  if (!products.length) {
+  if (products.length === 0) {
     productsListEl.innerHTML = "<p>No hay productos aún.</p>";
     return;
   }
@@ -59,80 +65,106 @@ function renderProducts() {
       <img src="${p.image}" class="product-image">
       <h3>${p.name}</h3>
       <p>${p.description}</p>
-      <p class="product-meta">
-        Origen: ${p.originCountry} · ${p.estimatedDeliveryDays} días
-      </p>
-      <p class="product-price">$${Number(p.price).toFixed(2)} MXN</p>
-      <button data-id="${p._id}" class="order-btn">Agregar</button>
+      <p><strong>$${p.price} MXN</strong></p>
+      <button data-id="${p._id}">Agregar al carrito</button>
     `;
 
+    card.querySelector("button").onclick = () => addToCart(p._id);
     productsListEl.appendChild(card);
-  });
-
-  document.querySelectorAll(".order-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      addToCart(btn.dataset.id);
-    });
   });
 }
 
 /* ============================================================
    CARRITO
-   ============================================================ */
+============================================================ */
 
-function addToCart(productId) {
-  const existing = cart.find((i) => i.productId === productId);
-  if (existing) {
-    existing.qty++;
-  } else {
-    cart.push({ productId, qty: 1 });
-  }
+function addToCart(id) {
+  const item = cart.find(i => i.id === id);
+  if (item) item.qty++;
+  else cart.push({ id, qty: 1 });
   updateCartCount();
 }
 
 function updateCartCount() {
-  if (!cartCountEl) return;
-  cartCountEl.textContent = cart.reduce((s, i) => s + i.qty, 0);
+  const el = document.getElementById("cart-count");
+  if (!el) return;
+  el.textContent = cart.reduce((s, i) => s + i.qty, 0);
 }
 
 /* ============================================================
-   ADMIN
-   ============================================================ */
+   ADMIN – LISTA
+============================================================ */
 
-const adminPanel = document.getElementById("admin-panel");
-const productForm = document.getElementById("product-form");
+function renderAdminProductList() {
+  if (!adminProductsTbody) return;
+  adminProductsTbody.innerHTML = "";
 
-function initAdmin() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("admin") !== "1") return;
-
-  adminPanel?.classList.remove("hidden");
+  products.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>$${p.price}</td>
+      <td>${p.originCountry}</td>
+    `;
+    adminProductsTbody.appendChild(tr);
+  });
 }
+
+/* ============================================================
+   ADMIN – CREAR PRODUCTO (MongoDB)
+============================================================ */
 
 if (productForm) {
   productForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const product = {
-      name: adminName.value,
-      description: adminDescription.value,
-      price: Number(adminPrice.value),
-      originCountry: adminOrigin.value,
-      estimatedDeliveryDays: Number(adminDays.value),
-      image: adminImage.value,
+    const data = {
+      name: productForm.name.value,
+      description: productForm.description.value,
+      price: Number(productForm.price.value),
+      originCountry: productForm.origin.value,
+      estimatedDeliveryDays: Number(productForm.days.value),
+      image: productForm.image.value
     };
 
-    await createProduct(product);
-    await fetchProducts();
+    await fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
     productForm.reset();
-    alert("Producto guardado y visible globalmente ✅");
+    loadProducts();
   });
 }
 
 /* ============================================================
-   INIT
-   ============================================================ */
+   LOGIN ADMIN
+============================================================ */
 
-fetchProducts();
-initAdmin();
+function initAdminPanelVisibility() {
+  if (!adminPanelEl) return;
+
+  if (new URLSearchParams(location.search).get("admin") !== "1") return;
+
+  if (localStorage.getItem(ADMIN_LOGGED_KEY) === "true") {
+    adminPanelEl.classList.remove("hidden");
+    return;
+  }
+
+  const pwd = prompt("Contraseña admin:");
+  if (pwd === ADMIN_PASSWORD) {
+    localStorage.setItem(ADMIN_LOGGED_KEY, "true");
+    adminPanelEl.classList.remove("hidden");
+  } else {
+    alert("Contraseña incorrecta");
+  }
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+
+loadProducts();
+initAdminPanelVisibility();
 
