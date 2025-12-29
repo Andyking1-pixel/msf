@@ -1,206 +1,138 @@
 /* ============================================================
-   CONFIGURACIÓN ADMIN
-   ============================================================ */
-
-const ADMIN_LOGGED_KEY = "msf_admin_logged_in";
-
-/* ============================================================
-   ESTADO GLOBAL (BACKEND)
+   ESTADO GLOBAL
    ============================================================ */
 
 let products = [];
 let offers = [];
-let cart = []; // carrito sigue siendo local
+let cart = [];
 
 /* ============================================================
-   FETCH HELPERS
-   ============================================================ */
-
-async function fetchJSON(url, options = {}) {
-  const res = await fetch(url, options);
-  if (!res.ok) throw new Error("Error API");
-  return res.json();
-}
-
-async function loadDataFromServer() {
-  products = await fetchJSON("/api/products");
-  offers = await fetchJSON("/api/offers");
-  renderProducts();
-  renderOffers();
-  updateCartCount();
-
-  if (adminPanelEl && !adminPanelEl.classList.contains("hidden")) {
-    renderAdminProductList();
-    renderOfferProductOptions();
-    renderAdminOffers();
-  }
-}
-
-/* ============================================================
-   DOM
+   ELEMENTOS DOM
    ============================================================ */
 
 const productsListEl = document.getElementById("products-list");
 const cartButton = document.getElementById("cart-button");
-const cartItemsEl = document.getElementById("cart-items");
-const cartTotalEl = document.getElementById("cart-total");
-const cartToastEl = document.getElementById("cart-toast");
+const cartCountEl = document.getElementById("cart-count");
 
-const adminPanelEl = document.getElementById("admin-panel");
-const productForm = document.getElementById("product-form");
-const adminProductIdInput = document.getElementById("admin-product-id");
-const adminNameInput = document.getElementById("admin-name");
-const adminDescInput = document.getElementById("admin-description");
-const adminPriceInput = document.getElementById("admin-price");
-const adminOriginInput = document.getElementById("admin-origin");
-const adminDaysInput = document.getElementById("admin-days");
-const adminImageInput = document.getElementById("admin-image");
-const adminProductsTbody = document.getElementById("admin-products-tbody");
+/* ============================================================
+   API HELPERS
+   ============================================================ */
 
-const offerForm = document.getElementById("offer-form");
-const offerProductSelect = document.getElementById("offer-product");
-const offerNewPriceInput = document.getElementById("offer-new-price");
-const offerTextInput = document.getElementById("offer-text");
-const adminOffersList = document.getElementById("admin-offers-list");
+async function fetchProducts() {
+  try {
+    const res = await fetch("/api/products");
+    products = await res.json();
+    renderProducts();
+  } catch (err) {
+    console.error("Error cargando productos:", err);
+  }
+}
+
+async function createProduct(product) {
+  const res = await fetch("/api/products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(product),
+  });
+  return res.json();
+}
 
 /* ============================================================
    RENDER PRODUCTOS
    ============================================================ */
 
 function renderProducts() {
+  if (!productsListEl) return;
+
   productsListEl.innerHTML = "";
 
-  products.forEach((p, i) => {
-    const hasDiscount = p.oldPrice && p.oldPrice > p.price;
-
-    productsListEl.innerHTML += `
-      <article class="product-card" style="animation-delay:${i * 0.07}s">
-        <img src="${p.image}" class="product-image">
-        <h3>${p.name}</h3>
-        <p>${p.description}</p>
-        <p class="product-meta">
-          Origen: ${p.originCountry} · ${p.estimatedDeliveryDays} días
-        </p>
-        <p class="product-price">
-          ${
-            hasDiscount
-              ? `<span class="price-old">$${p.oldPrice}</span>`
-              : ""
-          }
-          <span class="price-new">$${p.price}</span>
-        </p>
-        <button onclick="addToCart(${p.id})">Agregar al carrito</button>
-      </article>
-    `;
-  });
-}
-
-/* ============================================================
-   OFERTAS
-   ============================================================ */
-
-function renderOffers() {
-  const list = document.getElementById("offers-list");
-  if (!list) return;
-  list.innerHTML = "";
-
-  offers.forEach((o) => {
-    const p = products.find((x) => x.id === o.productId);
-    if (!p) return;
-
-    list.innerHTML += `
-      <li class="offer-card">
-        <img src="${p.image}">
-        <div>
-          <strong>${o.text || p.name}</strong>
-          <p>
-            <span class="price-old">$${o.previousPrice}</span>
-            <span class="price-new">$${p.price}</span>
-          </p>
-        </div>
-      </li>
-    `;
-  });
-}
-
-/* ============================================================
-   ADMIN PRODUCTOS
-   ============================================================ */
-
-productForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const payload = {
-    name: adminNameInput.value,
-    description: adminDescInput.value,
-    price: Number(adminPriceInput.value),
-    originCountry: adminOriginInput.value,
-    estimatedDeliveryDays: Number(adminDaysInput.value),
-    image: adminImageInput.value
-  };
-
-  const id = adminProductIdInput.value;
-
-  if (id) {
-    await fetchJSON(`/api/products/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-  } else {
-    await fetchJSON("/api/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-  }
-
-  await loadDataFromServer();
-  productForm.reset();
-});
-
-/* ============================================================
-   LOGIN ADMIN
-   ============================================================ */
-
-function initAdminPanelVisibility() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("admin") !== "1") return;
-
-  if (localStorage.getItem(ADMIN_LOGGED_KEY) === "true") {
-    adminPanelEl.classList.remove("hidden");
-    loadDataFromServer();
+  if (!products.length) {
+    productsListEl.innerHTML = "<p>No hay productos aún.</p>";
     return;
   }
 
-  fetch("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      user: prompt("Usuario admin"),
-      pass: prompt("Contraseña")
-    })
-  })
-    .then((r) => r.json())
-    .then((d) => {
-      localStorage.setItem("msf_token", d.token);
-      localStorage.setItem(ADMIN_LOGGED_KEY, "true");
-      adminPanelEl.classList.remove("hidden");
-      loadDataFromServer();
-    })
-    .catch(() => alert("Login incorrecto"));
+  products.forEach((p) => {
+    const card = document.createElement("article");
+    card.className = "product-card";
+
+    card.innerHTML = `
+      <img src="${p.image}" class="product-image">
+      <h3>${p.name}</h3>
+      <p>${p.description}</p>
+      <p class="product-meta">
+        Origen: ${p.originCountry} · ${p.estimatedDeliveryDays} días
+      </p>
+      <p class="product-price">$${Number(p.price).toFixed(2)} MXN</p>
+      <button data-id="${p._id}" class="order-btn">Agregar</button>
+    `;
+
+    productsListEl.appendChild(card);
+  });
+
+  document.querySelectorAll(".order-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      addToCart(btn.dataset.id);
+    });
+  });
+}
+
+/* ============================================================
+   CARRITO
+   ============================================================ */
+
+function addToCart(productId) {
+  const existing = cart.find((i) => i.productId === productId);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ productId, qty: 1 });
+  }
+  updateCartCount();
+}
+
+function updateCartCount() {
+  if (!cartCountEl) return;
+  cartCountEl.textContent = cart.reduce((s, i) => s + i.qty, 0);
+}
+
+/* ============================================================
+   ADMIN
+   ============================================================ */
+
+const adminPanel = document.getElementById("admin-panel");
+const productForm = document.getElementById("product-form");
+
+function initAdmin() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("admin") !== "1") return;
+
+  adminPanel?.classList.remove("hidden");
+}
+
+if (productForm) {
+  productForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const product = {
+      name: adminName.value,
+      description: adminDescription.value,
+      price: Number(adminPrice.value),
+      originCountry: adminOrigin.value,
+      estimatedDeliveryDays: Number(adminDays.value),
+      image: adminImage.value,
+    };
+
+    await createProduct(product);
+    await fetchProducts();
+    productForm.reset();
+    alert("Producto guardado y visible globalmente ✅");
+  });
 }
 
 /* ============================================================
    INIT
    ============================================================ */
 
-loadDataFromServer();
-initAdminPanelVisibility();
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(reg => reg.unregister());
-  });
-}
+fetchProducts();
+initAdmin();
 
